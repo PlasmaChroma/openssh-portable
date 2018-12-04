@@ -122,6 +122,17 @@ userauth_pubkey(struct ssh *ssh)
 		    "(received %d, expected %d)", __func__, key->type, pktype);
 		goto done;
 	}
+	if (log_level_get() >= SYSLOG_LEVEL_DEBUG1) {
+		if ((b = sshbuf_new()) == NULL)
+			fatal("%s: sshbuf_new failed", __func__);
+		if ((r = sshkey_format_text(key, b)) != 0)
+			fatal("%s: sshkey_format_text failed: %s", __func__,
+				ssh_err(r));
+		debug("%s: public key of %s: %s", __func__, authctxt->user,
+			sshbuf_ptr(b));
+		sshbuf_free(b);
+		b = NULL;
+	}
 	if (sshkey_type_plain(key->type) == KEY_RSA &&
 	    (ssh->compat & SSH_BUG_RSASIGMD5) != 0) {
 		logit("Refusing RSA key because client uses unsafe "
